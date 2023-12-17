@@ -6,12 +6,7 @@ import DAO.MessageDAO;
 import java.util.List;
 
 /*
- * TODO:
- * Create new message
- * Get all messages
- * Get one message by message id
- * Delete a message by message id
- * Update message by message id
+ * Service class for Messages.
  */
 
 public class MessageService {

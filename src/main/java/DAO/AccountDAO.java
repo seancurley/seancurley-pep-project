@@ -21,14 +21,19 @@ import java.util.ArrayList;
 
 public class AccountDAO {
     
+    /*
+     * Method for adding a new account.
+     */
     public Account addAccount(Account toAdd)
     {
         Connection connection = ConnectionUtil.getConnection();
+        //Sanity check for username and password
         if(toAdd.getUsername().equals("") || toAdd.getPassword().length() < 4)
         {
             return null;
         }
         try{
+            //Sanity check to make sure we're not repeating usernames
             String sql = "SELECT * FROM Account WHERE username = ?";
             PreparedStatement ps = connection.prepareStatement(sql);
             ps.setString(1, toAdd.getUsername());
@@ -38,6 +43,7 @@ public class AccountDAO {
                 return null;
             }
 
+        //Add the new account, similarly to how Books were added in the Library project
            sql = "INSERT INTO Account(username, password) VALUES (?, ?)";
            ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
            ps.setString(1, toAdd.getUsername());
@@ -55,9 +61,13 @@ public class AccountDAO {
         {
             System.out.println(e.getMessage());
         }
+        //If we get here, something has gone wrong.
         return null;
     }
 
+    /*
+     * Method for validating an existing user's login and password.
+     */
     public Account checkValidUser(Account toCheck)
     {
         Connection connection = ConnectionUtil.getConnection();
@@ -75,12 +85,16 @@ public class AccountDAO {
                 return toRet;
             }
         }catch(SQLException e){
-                System.out.println("Error: " + e.getMessage());
+                System.out.println(e.getMessage());
             }
+            //If we get here, there was no existing username/password combination in the database.
             return null;
 
     }
 
+    /*
+     * Method for retrieving all user accounts.
+     */
     public List<Account> getAllAccounts()
     {
         Connection connection = ConnectionUtil.getConnection();
@@ -91,7 +105,9 @@ public class AccountDAO {
             ResultSet rs = ps.executeQuery();
             while(rs.next())
             {
-                Account account = new Account(rs.getInt("account_id"), rs.getString("username"), rs.getString("password"));
+                Account account = new Account(rs.getInt("account_id"), 
+                                            rs.getString("username"), 
+                                            rs.getString("password"));
                 accounts.add(account);
             }
         }catch(SQLException e){

@@ -6,9 +6,7 @@ import DAO.AccountDAO;
 import java.util.List;
 
 /*
- * TODO:
- * Create new user
- * Check username and password for login
+ * Service class for Accounts.
  */
 
 public class AccountService {

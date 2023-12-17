@@ -22,14 +22,19 @@ import java.util.ArrayList;
  */
 public class MessageDAO {
     
+    /*
+     * Method for adding a new message
+     */
     public Message addMessage(Message toAdd)
     {
         Connection connection = ConnectionUtil.getConnection();
+        //Check the length of the message to ensure it is within bounds
         if(toAdd.getMessage_text().length() <= 0 || toAdd.getMessage_text().length() > 255)
         {
             return null;
         }
 
+        //Make sure the message is from a valid user
         try{
             String sql = "SELECT * FROM Account WHERE account_id = ?";
             PreparedStatement ps = connection.prepareStatement(sql);
@@ -40,6 +45,7 @@ public class MessageDAO {
                 return null;
             }
 
+            //Insert the new message into the database similarly to how Books were in the Library project
            sql = "INSERT INTO message(posted_by, message_text, time_posted_epoch) VALUES (?, ?, ?)";
            ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
            ps.setInt(1, toAdd.getPosted_by());
@@ -57,9 +63,13 @@ public class MessageDAO {
         {
             System.out.println(e.getMessage());
         }
+        //If we get here, soemthing has gone wrong.
         return null;
     }
 
+    /*
+     * Method for retrieving a message by its ID.
+     */
     public Message getMessageById(int id)
     {
         Connection connection = ConnectionUtil.getConnection();
@@ -81,9 +91,13 @@ public class MessageDAO {
         {
             System.out.println(e.getMessage());
         }
+        //If we get here, no such message existed.
         return null;
     }
 
+    /*
+     * Method for retrieving a user's messages via their account ID.
+     */
     public List<Message> getMessagesByAccount(int account_id)
     {
         List<Message> messages = new ArrayList<Message>();
@@ -108,11 +122,16 @@ public class MessageDAO {
         {
             System.out.println(e.getMessage());
         }
+        //Even if the list is empty, we want to return it.
         return messages;
     }
 
+    /*
+     * Method for deleting a Message, using its message_id.
+     */
     public Message deleteMessage(int id)
     {
+        //Save the old message before it is deleted!
         Message toRet = getMessageById(id);
 
         Connection connection = ConnectionUtil.getConnection();
@@ -126,15 +145,21 @@ public class MessageDAO {
         {
             System.out.println(e.getMessage());
         }
+        //Return the old message, or null if it didn't exist.
         return toRet;
     }
 
+    /*
+     * Method for updating a message via its ID.
+     */
     public Message updateMessageById(int id, String update)
     {
+        //Check to make sure the updated length is within bounds
         if(update.length() <= 0 || update.length() > 255)
         {
             return null;
         }
+        //Don't update a message that doesn't exist!
         if(getMessageById(id) == null)
         {
             return null;
@@ -151,9 +176,13 @@ public class MessageDAO {
         {
             System.out.println(e.getMessage());
         }
+        //Return the new message, or null if it didn't exist.
         return getMessageById(id);
     }
 
+    /*
+     * Method for retrieving all messages.
+     */
     public List<Message> getAllMessages()
     {
         Connection connection = ConnectionUtil.getConnection();
@@ -173,6 +202,7 @@ public class MessageDAO {
         }catch(SQLException e){
             System.out.println(e.getMessage());
         }
+        //Even if there are no messages, return the empty list.
         return messages;
     }
 

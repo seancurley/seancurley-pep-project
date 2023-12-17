@@ -44,6 +44,9 @@ public class SocialMediaController {
         return app;
     }
 
+    /*
+     * Handler for registering a new user.
+     */
     private void registerHandler(Context ctx) throws JsonProcessingException
     {
         ObjectMapper mapper = new ObjectMapper();
@@ -60,6 +63,9 @@ public class SocialMediaController {
         }
     }
 
+    /*
+     * Handler for login requests.
+     */
     private void loginHandler(Context ctx) throws JsonProcessingException
     {
         ObjectMapper mapper = new ObjectMapper();
@@ -75,6 +81,9 @@ public class SocialMediaController {
         }
     }
 
+    /*
+     * Handler for posting a new message.
+     */
     private void postMessageHandler(Context ctx) throws JsonProcessingException
     {
         ObjectMapper mapper = new ObjectMapper();
@@ -91,13 +100,20 @@ public class SocialMediaController {
         }
     }
 
+    /*
+     * Handler for retrieving all messages.
+     */
     private void getAllMessagesHandler(Context ctx) throws JsonProcessingException
     {
         List<Message> messages = messageService.getAllMessages();
         ctx.json(messages);
-        ctx.status(200);
     }
 
+    /*
+     * Handler for getting messages by their ID. 
+     * The message ID is taken from directly from the path parameter
+     * instead of making a go-between Message object.
+     */
     private void getMessageByIdHandler(Context ctx) throws JsonProcessingException
     {
         ObjectMapper mapper = new ObjectMapper();
@@ -107,9 +123,13 @@ public class SocialMediaController {
         {
             ctx.json(mapper.writeValueAsString(toRet));
         }
-        ctx.status(200);
     }
 
+    /*
+     * Handler for deleting messages.
+     * The message ID is taken directly from the path parameter
+     * instead of making a go-between Message object.
+     */
     private void deleteMessageByIdHandler(Context ctx) throws JsonProcessingException
     {
         ObjectMapper mapper = new ObjectMapper();
@@ -119,9 +139,13 @@ public class SocialMediaController {
         {
             ctx.json(mapper.writeValueAsString(toRet));
         }
-        ctx.status(200);
     }
 
+    /*
+     * Handler for updating messages by message ID.
+     * We only need the message_text info from the JSON object, so that string is
+     * passed directly rather than passing a Message object to the MessageService.
+     */
     private void updateMessageByIdHandler(Context ctx) throws JsonProcessingException
     {
         ObjectMapper mapper = new ObjectMapper();
@@ -131,7 +155,6 @@ public class SocialMediaController {
         if(toRet != null)
         {
             ctx.json(mapper.writeValueAsString(toRet));
-            ctx.status(200);
         }
         else
         {
@@ -139,6 +162,9 @@ public class SocialMediaController {
         }
     }
 
+    /*
+     * Handler for getting messages by account ID.
+     */
     private void getMessagesByAccountHandler(Context ctx) throws JsonProcessingException
     {
         ObjectMapper mapper = new ObjectMapper();
