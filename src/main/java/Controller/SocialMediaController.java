@@ -1,7 +1,13 @@
 package Controller;
 
+import Service.*;
+import Model.*;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.List;
 
 /**
  * TODO: You will need to write your own endpoints and handlers for your controller. The endpoints you will need can be
@@ -9,6 +15,16 @@ import io.javalin.http.Context;
  * refer to prior mini-project labs and lecture materials for guidance on how a controller may be built.
  */
 public class SocialMediaController {
+
+    private AccountService accountService;
+    private MessageService messageService;
+
+    public SocialMediaController()
+    {
+        accountService = new AccountService();
+        messageService = new MessageService();
+    }
+
     /**
      * In order for the test cases to work, you will need to write the endpoints in the startAPI() method, as the test
      * suite must receive a Javalin object from this method.
@@ -16,18 +32,118 @@ public class SocialMediaController {
      */
     public Javalin startAPI() {
         Javalin app = Javalin.create();
-        app.get("example-endpoint", this::exampleHandler);
+        app.post("/register", this::registerHandler);
+        app.post("/login", this::loginHandler);
+        app.post("/messages", this::postMessageHandler);
+        app.get("/messages", this::getAllMessagesHandler);
+        app.get("/messages/{message_id}", this::getMessageByIdHandler);
+        app.delete("/messages/{message_id}", this::deleteMessageByIdHandler);
+        app.patch("/messages/{message_id}", this::updateMessageByIdHandler);
+        app.get("/accounts/{account_id}/messages", this::getMessagesByAccountHandler);
 
         return app;
     }
 
-    /**
-     * This is an example handler for an example endpoint.
-     * @param context The Javalin Context object manages information about both the HTTP request and response.
-     */
-    private void exampleHandler(Context context) {
-        context.json("sample text");
+    private void registerHandler(Context ctx) throws JsonProcessingException
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        Account toAdd = mapper.readValue(ctx.body(), Account.class);
+        Account addedAccount = accountService.addAccount(toAdd);
+        if(addedAccount != null)
+        {
+            ctx.json(mapper.writeValueAsString(addedAccount));
+            ctx.status(200);
+        }
+        else
+        {
+            ctx.status(400);
+        }
     }
 
+    private void loginHandler(Context ctx) throws JsonProcessingException
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        Account toCheck = mapper.readValue(ctx.body(), Account.class);
+        Account validAccount = accountService.checkValidUser(toCheck);
+        if(validAccount != null)
+        {
+            ctx.json(mapper.writeValueAsString(validAccount));
+        }
+        else
+        {
+            ctx.status(401);
+        }
+    }
 
+    private void postMessageHandler(Context ctx) throws JsonProcessingException
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        Message toAdd = mapper.readValue(ctx.body(), Message.class);
+        Message validMessage = messageService.addMessage(toAdd);
+        if(validMessage != null)
+        {
+            ctx.json(mapper.writeValueAsString(validMessage));
+            ctx.status(200);
+        }
+        else
+        {
+            ctx.status(400);
+        }
+    }
+
+    private void getAllMessagesHandler(Context ctx) throws JsonProcessingException
+    {
+        List<Message> messages = messageService.getAllMessages();
+        ctx.json(messages);
+        ctx.status(200);
+    }
+
+    private void getMessageByIdHandler(Context ctx) throws JsonProcessingException
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        int messageID = Integer.parseInt(ctx.pathParam("message_id"));
+        Message toRet = messageService.getMessageById(messageID);
+        if(toRet != null)
+        {
+            ctx.json(mapper.writeValueAsString(toRet));
+        }
+        ctx.status(200);
+    }
+
+    private void deleteMessageByIdHandler(Context ctx) throws JsonProcessingException
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        int messageID = Integer.parseInt(ctx.pathParam("message_id"));
+        Message toRet = messageService.deleteMessageById(messageID);
+        if(toRet != null)
+        {
+            ctx.json(mapper.writeValueAsString(toRet));
+        }
+        ctx.status(200);
+    }
+
+    private void updateMessageByIdHandler(Context ctx) throws JsonProcessingException
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        int messageID = Integer.parseInt(ctx.pathParam("message_id"));
+        String newMessage = mapper.readValue(ctx.body(), Message.class).getMessage_text();
+        Message toRet = messageService.updateMessageById(messageID, newMessage);
+        if(toRet != null)
+        {
+            ctx.json(mapper.writeValueAsString(toRet));
+            ctx.status(200);
+        }
+        else
+        {
+            ctx.status(400);
+        }
+    }
+
+    private void getMessagesByAccountHandler(Context ctx) throws JsonProcessingException
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        int accountID = Integer.parseInt(ctx.pathParam("account_id"));
+        List<Message> toRet = messageService.getMessagesByAccount(accountID);
+        ctx.json(mapper.writeValueAsString(toRet));
+    }
 }
